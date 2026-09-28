@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Large video files
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# IDE files
+.vscode/
+.idea/

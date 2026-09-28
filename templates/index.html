@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Self-Healing Autonomous Driving // CV+GenAI HUD</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container-highest": "#273647",
+            "on-secondary-fixed": "#002113",
+            "on-secondary": "#003824",
+            "on-error-container": "#ffdad6",
+            "surface": "#051424",
+            "tertiary-fixed": "#ffddb8",
+            "primary-fixed": "#acedff",
+            "on-primary-container": "#00424f",
+            "on-surface": "#d4e4fa",
+            "primary-fixed-dim": "#4cd7f6",
+            "surface-container-low": "#0d1c2d",
+            "on-background": "#d4e4fa",
+            "surface-variant": "#273647",
+            "on-secondary-container": "#00311f",
+            "on-primary": "#003640",
+            "secondary-fixed-dim": "#4edea3",
+            "surface-dim": "#051424",
+            "surface-bright": "#2c3a4c",
+            "error-container": "#93000a",
+            "on-surface-variant": "#bcc9cd",
+            "inverse-primary": "#00687a",
+            "error": "#ffb4ab",
+            "on-error": "#690005",
+            "on-tertiary-container": "#563400",
+            "tertiary-container": "#e79400",
+            "tertiary-fixed-dim": "#ffb95f",
+            "on-tertiary-fixed-variant": "#653e00",
+            "on-primary-fixed": "#001f26",
+            "secondary": "#4edea3",
+            "primary": "#4cd7f6",
+            "on-primary-fixed-variant": "#004e5c",
+            "surface-container-high": "#1c2b3c",
+            "inverse-on-surface": "#233143",
+            "on-tertiary": "#472a00",
+            "surface-tint": "#4cd7f6",
+            "background": "#051424",
+            "surface-container": "#122131",
+            "surface-container-lowest": "#010f1f",
+            "outline-variant": "#3d494c",
+            "on-tertiary-fixed": "#2a1700",
+            "secondary-fixed": "#6ffbbe",
+            "on-secondary-fixed-variant": "#005236",
+            "secondary-container": "#00a572",
+            "outline": "#869397",
+            "primary-container": "#06b6d4",
+            "tertiary": "#ffb95f",
+            "inverse-surface": "#d4e4fa"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "margin": "1rem",
+            "space-sm": "0.5rem",
+            "space-xl": "1.5rem",
+            "gutter-desktop": "1rem",
+            "space-lg": "1rem",
+            "space-xs": "0.25rem",
+            "gutter": "0.75rem",
+            "space-md": "0.75rem",
+            "margin-desktop": "1.5rem"
+          },
+          "fontFamily": {
+            "label-md": ["JetBrains Mono"],
+            "headline-lg": ["Inter"],
+            "headline-xl": ["Inter"],
+            "label-xs": ["JetBrains Mono"],
+            "body-md": ["Inter"],
+            "body-lg": ["Inter"],
+            "body-sm": ["Inter"],
+            "headline-xl-mobile": ["Inter"],
+            "headline-md": ["Inter"],
+            "label-lg": ["JetBrains Mono"],
+            "label-sm": ["JetBrains Mono"]
+          },
+          "fontSize": {
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500" }],
+            "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "label-xs": ["10px", { "lineHeight": "12px", "letterSpacing": "0.06em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+            "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.05em", "fontWeight": "500" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 16px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+    .hud-scanline {
+      background: linear-gradient(to bottom, rgba(76, 215, 246, 0), rgba(76, 215, 246, 0.15) 50%, rgba(76, 215, 246, 0));
+      animation: scan 3s linear infinite;
+    }
+    @keyframes scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
+    .hud-pulse {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col font-body-sm select-none antialiased overflow-x-hidden">
+<!-- TOP RESEARCH CONSOLE HEADER (From Shared Components JSON TopNavBar) -->
+<header class="flex justify-between items-center w-full px-margin-desktop py-space-sm bg-surface-container-lowest dark:bg-surface-container-lowest border-b border-outline-variant dark:border-outline-variant z-50 sticky top-0">
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">videocam</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md uppercase tracking-wider font-bold text-primary dark:text-primary">
+            SELF-HEALING AUTONOMOUS DRIVING // CV+GenAI HUD
+          </span>
+<span class="font-label-xs text-label-xs text-outline tracking-wider">
+            Model: DeepRestore-V4 + YOLOv9-Edge // Research Testbed
+          </span>
+</div>
+</div>
+<!-- Nav Tabs -->
+<nav class="hidden lg:flex items-center gap-space-md ml-space-lg">
+<a class="text-primary dark:text-primary border-b-2 border-primary dark:border-primary font-label-sm text-label-sm pb-1" href="#perception">Perception Stream</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface font-label-sm text-label-sm pb-1 transition-colors" href="#telemetry">Telemetry Matrix</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface font-label-sm text-label-sm pb-1 transition-colors" href="#pipeline">Pipeline State</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface font-label-sm text-label-sm pb-1 transition-colors" href="#diagnostics">Diagnostics</a>
+</nav>
+</div>
+<!-- Telemetry Status Chips & Actions -->
+<div class="flex items-center gap-space-md">
+<div class="hidden xl:flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-xs border border-outline-variant rounded">
+<span class="inline-flex items-center gap-1 font-label-xs text-label-xs text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary hud-pulse"></span> ONLINE
+        </span>
+<span class="text-outline-variant font-label-xs">|</span>
+<span class="font-label-xs text-label-xs text-primary">⚡ REAL-TIME</span>
+<span class="text-outline-variant font-label-xs">|</span>
+<span class="font-label-xs text-label-xs text-on-surface" id="fpsDisplay">59.4 FPS</span>
+<span class="text-outline-variant font-label-xs">|</span>
+<span class="font-label-xs text-label-xs text-secondary-container bg-surface-container-high px-1 border border-secondary-container" id="topModeBadge">HEALING ACTIVE</span>
+<span class="text-outline-variant font-label-xs">|</span>
+<span class="font-label-xs text-label-xs text-outline" id="frameCounter">FRM #48,192</span>
+<span class="text-outline-variant font-label-xs">|</span>
+<span class="font-label-xs text-label-xs text-outline">EDGE-NODE-NV01</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<button class="bg-primary-container text-on-primary font-label-xs text-label-xs font-bold px-space-md py-space-xs rounded hover:bg-primary transition-colors flex items-center gap-1" id="btnEngageOverride">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+          Engage Override
+        </button>
+<button class="bg-transparent text-error border border-error font-label-xs text-label-xs font-bold px-space-md py-space-xs rounded hover:bg-error hover:text-on-error transition-colors flex items-center gap-1" id="btnEmergencyStop">
+<span class="material-symbols-outlined text-[14px]">emergency</span>
+          Emergency Stop
+        </button>
+<div class="flex items-center gap-1 border-l border-outline-variant pl-space-sm text-outline">
+<button class="p-1 hover:text-primary transition-colors" title="Sensors"><span class="material-symbols-outlined">sensors</span></button>
+<button class="p-1 hover:text-primary transition-colors" title="Terminal"><span class="material-symbols-outlined">terminal</span></button>
+<button class="p-1 hover:text-primary transition-colors" title="Notifications"><span class="material-symbols-outlined">notifications</span></button>
+</div>
+</div>
+</div>
+</header>
+<!-- WORKBENCH BODY: LATERAL RAIL + DENSE MULTI-VIEWPORT ARCHITECTURE -->
+<div class="flex-1 flex overflow-hidden">
+<!-- SIDE NAV RAIL (From Shared Components JSON SideNavBar) -->
+<aside class="w-14 lg:w-56 bg-surface-container-low border-r border-outline-variant flex flex-col justify-between py-space-sm shrink-0 z-40">
+<div class="flex flex-col gap-space-sm">
+<div class="hidden lg:flex flex-col px-space-md py-space-xs border-b border-outline-variant pb-space-sm">
+<div class="font-label-xs text-label-xs font-bold text-primary">NODE: VPU-01</div>
+<div class="font-label-xs text-label-xs text-secondary flex items-center gap-1 mt-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> STATUS: NOMINAL
+          </div>
+</div>
+<nav class="flex flex-col gap-0.5 mt-space-xs">
+<!-- Active Nav Item -->
+<a class="bg-surface-container-high text-primary border-l-2 border-primary font-label-xs text-label-xs uppercase px-space-md py-space-sm flex items-center gap-space-sm" href="#">
+<span class="material-symbols-outlined">videocam</span>
+<span class="hidden lg:inline">Perception HUD</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-label-xs text-label-xs uppercase px-space-md py-space-sm flex items-center gap-space-sm transition-colors" href="#">
+<span class="material-symbols-outlined">vital_signs</span>
+<span class="hidden lg:inline">Health Telemetry</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-label-xs text-label-xs uppercase px-space-md py-space-sm flex items-center gap-space-sm transition-colors" href="#">
+<span class="material-symbols-outlined">schema</span>
+<span class="hidden lg:inline">Healing Pipeline</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-label-xs text-label-xs uppercase px-space-md py-space-sm flex items-center gap-space-sm transition-colors" href="#">
+<span class="material-symbols-outlined">compare</span>
+<span class="hidden lg:inline">Comparison Lab</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container hover:text-on-surface font-label-xs text-label-xs uppercase px-space-md py-space-sm flex items-center gap-space-sm transition-colors" href="#">
+<span class="material-symbols-outlined">list_alt</span>
+<span class="hidden lg:inline">Event Stream</span>
+</a>
+</nav>
+</div>
+<div class="px-space-xs lg:px-space-md flex flex-col gap-space-xs">
+<button class="hidden lg:flex w-full items-center justify-center gap-1.5 bg-surface-container-high border border-primary text-primary hover:bg-primary hover:text-on-primary font-label-xs text-label-xs py-space-xs rounded transition-all" id="btnSideTrigger">
+<span class="material-symbols-outlined text-[13px]">bolt</span>
+          Simulate Trigger
+        </button>
+<div class="border-t border-outline-variant pt-space-xs flex flex-col gap-0.5">
+<a class="text-on-surface-variant hover:text-on-surface font-label-xs text-label-xs px-space-md py-1 flex items-center gap-space-sm" href="#">
+<span class="material-symbols-outlined text-[15px]">settings</span>
+<span class="hidden lg:inline">Settings</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface font-label-xs text-label-xs px-space-md py-1 flex items-center gap-space-sm" href="#">
+<span class="material-symbols-outlined text-[15px]">terminal</span>
+<span class="hidden lg:inline">Docs</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- MAIN DYNAMIC CONTENT WORKSPACE -->
+<main class="flex-1 overflow-y-auto p-space-md lg:p-space-lg grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
+<!-- ============================================== -->
+<!-- LEFT / MAIN VIEWPORT COLUMN (xl:col-span-7) -->
+<!-- ============================================== -->
+<div class="xl:col-span-7 flex flex-col gap-space-lg">
+<!-- 1. LIVE PERCEPTION HUD PANEL -->
+<section class="bg-surface-container border border-outline-variant rounded flex flex-col overflow-hidden" id="perception">
+<!-- Viewport Header Toolbar -->
+<div class="px-space-md py-space-xs bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-xs text-label-xs text-on-surface font-bold">[CAM_01: FRONT_RGB_120° FOV]</span>
+<span class="font-label-xs text-label-xs text-outline">[1920x1080@60Hz - RAW ISP FEED]</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<input type="file" id="fileUpload" accept=".jpg,.jpeg,.png,.mp4,.avi" class="hidden" style="display:none;">
+<button onclick="document.getElementById('fileUpload').click()" class="bg-primary/10 border border-primary text-primary font-label-xs text-label-xs px-2 py-1 rounded uppercase hover:bg-primary hover:text-on-primary transition-colors flex items-center gap-1 cursor-pointer">
+  <span class="material-symbols-outlined text-[14px]">upload_file</span> <span id="uploadBtnText">UPLOAD IMAGE / VIDEO</span>
+</button>
+<span class="bg-primary/10 border border-primary text-primary font-label-xs text-label-xs px-1.5 py-0.5 rounded uppercase" id="perceptionModeBadge">
+                MODE: RESTORED &amp; VALIDATED
+              </span>
+<span class="font-label-xs text-label-xs text-outline bg-surface-container-high px-1.5 py-0.5 rounded">
+                YOLOv9-DenseNet
+              </span>
+</div>
+</div>
+<!-- The Synthetic Highway Vision Canvas Viewport -->
+<div class="relative w-full aspect-[16/9] bg-[#070e17] overflow-hidden border-b border-outline-variant transition-all duration-300" id="viewportContainer">
+<img id="video-feed" style="width:100%; height:100%; object-fit:contain;" />
+
+<!-- Dynamic degradation filter layer -->
+<!-- Bottom HUD Metric Overlay -->
+<div class="absolute bottom-2 left-2 right-2 flex justify-between items-center pointer-events-none z-20 text-[9px] font-label-xs text-outline bg-surface-container-lowest/80 backdrop-blur px-2 py-1 border border-outline-variant">
+<div>LATERAL ERROR: <span class="text-primary font-bold">+0.04m</span> | YAW: <span class="text-primary font-bold">-0.12°</span></div>
+<div class="flex items-center gap-3">
+<span>SSIM: <span class="text-secondary font-bold" id="liveSsim">0.94</span></span>
+<span>LAPLACIAN VAR: <span class="text-secondary font-bold" id="liveLaplacian">88.4</span></span>
+<span>INFERENCE: <span class="text-primary font-bold">14.2ms</span></span>
+</div>
+</div>
+</div>
+<!-- Quick Viewport Stats Bar -->
+<div class="p-space-sm bg-surface-container-low flex flex-wrap items-center justify-between gap-space-sm text-outline font-label-xs text-label-xs">
+<div class="flex items-center gap-space-md">
+<span>FOV: <strong class="text-on-surface">120° H / 70° V</strong></span>
+<span>SYNCHRONIZATION: <strong class="text-secondary">PTP CLOCK ±0.2ms</strong></span>
+<span>COLOR SPACE: <strong class="text-on-surface">REC.709 LINEAR</strong></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-block w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-secondary font-bold">ZERO SENSOR ANOMALY</span>
+</div>
+</div>
+</section>
+<!-- 4. BEFORE / AFTER HEALING COMPARISON PANEL -->
+<section class="bg-surface-container border border-outline-variant rounded p-space-md flex flex-col gap-space-sm" id="comparison">
+<div class="flex items-center justify-between pb-space-xs border-b border-outline-variant">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">compare</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Visual Restoration &amp; Confidence Recovery</h2>
+</div>
+<span class="font-label-xs text-label-xs text-outline">DUAL BUFFER LATENT COMPARISON</span>
+</div>
+<!-- Split Comparison Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md mt-1">
+<!-- Left Card: Before Healing -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-space-sm flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-xs text-label-xs text-error font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> BEFORE HEALING
+                </span>
+<span class="font-label-xs text-label-xs text-outline">Degraded Input</span>
+</div>
+<!-- Degraded Visual Mini-Canvas -->
+<div class="relative w-full h-32 bg-[#09111c] border border-outline-variant overflow-hidden rounded flex items-center justify-center">
+<!-- Blurred / foggy simulated canvas -->
+<div class="absolute inset-0 bg-gradient-to-t from-slate-400/50 via-slate-300/40 to-slate-500/30 backdrop-blur-[6px] z-10"></div>
+<!-- Simulated vague road -->
+<div class="w-full h-full opacity-30 flex items-center justify-center">
+<div class="w-24 h-16 border border-dashed border-error/50 flex flex-col items-center justify-center p-1 text-center">
+<span class="text-error font-label-xs text-[9px] font-bold">Car 42% [Uncertain]</span>
+<span class="text-outline text-[7px]">Lost Track ID</span>
+</div>
+</div>
+<div class="absolute bottom-1 left-1 z-20 bg-surface-container-lowest/90 px-1 border border-outline-variant font-label-xs text-[8px] text-error">
+                  HEAVY ATMOSPHERIC FOG
+                </div>
+</div>
+<!-- Sub-metrics -->
+<div class="font-label-xs text-label-xs text-outline flex justify-between border-t border-outline-variant/50 pt-1">
+<span>Avg Conf: <strong class="text-error">42%</strong></span>
+<span>Blur Level: <strong class="text-error">8.8/10</strong></span>
+<span>SNR: <strong class="text-outline">11.2 dB</strong></span>
+</div>
+</div>
+<!-- Right Card: After Healing -->
+<div class="bg-surface-container-low border border-secondary/40 rounded p-space-sm flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-xs text-label-xs text-secondary font-bold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> AFTER HEALING
+                </span>
+<span class="font-label-xs text-label-xs text-secondary">GenAI Denoised</span>
+</div>
+<!-- Clear Restored Visual Mini-Canvas -->
+<div class="relative w-full h-32 bg-[#09111c] border border-secondary/50 overflow-hidden rounded flex items-center justify-center">
+<!-- Crystal clear road representation -->
+<div class="w-full h-full flex items-center justify-center relative">
+<div class="w-28 h-18 border border-secondary bg-secondary/10 flex flex-col items-center justify-center p-1 text-center">
+<span class="text-secondary font-label-xs text-[10px] font-bold">Car 94% | Person 91%</span>
+<span class="text-primary text-[8px]">Inference Verified</span>
+</div>
+<div class="absolute top-1 right-1 w-2 h-2 rounded-full bg-secondary"></div>
+</div>
+<div class="absolute bottom-1 left-1 z-20 bg-surface-container-lowest/90 px-1 border border-secondary font-label-xs text-[8px] text-secondary">
+                  DEEPRESTORE-V4 LATENT PASS
+                </div>
+</div>
+<!-- Sub-metrics -->
+<div class="font-label-xs text-label-xs text-outline flex justify-between border-t border-outline-variant/50 pt-1">
+<span>Avg Conf: <strong class="text-secondary">86%</strong></span>
+<span>Blur Level: <strong class="text-secondary">1.4/10</strong></span>
+<span>PSNR: <strong class="text-secondary">34.6 dB</strong></span>
+</div>
+</div>
+</div>
+<!-- Comparison Summary Bar -->
+<div class="mt-1 p-space-sm bg-surface-container-high border border-outline-variant rounded flex flex-wrap items-center justify-between gap-2">
+<div class="flex items-center gap-space-md text-label-xs font-label-xs">
+<span class="text-outline">Confidence Improvement: <strong class="text-secondary">+44% (p &lt; 0.001)</strong></span>
+<span class="text-outline">Latent Restoration: <strong class="text-primary">38ms</strong></span>
+</div>
+<div class="bg-secondary/10 border border-secondary text-secondary font-label-xs text-label-xs px-2 py-0.5 rounded font-bold">
+              ✓ SUCCESSFUL - PERCEPTION RESTORED
+            </div>
+</div>
+</section>
+<!-- 8. INTERACTIVE CONTROL WORKBENCH -->
+<section class="bg-surface-container border border-outline-variant rounded p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-xs text-label-xs text-outline uppercase tracking-wider font-bold">Simulation &amp; Degradation Injection Controls</span>
+<span class="font-label-xs text-label-xs text-primary">RESEARCH EXPERIMENTATION BENCH</span>
+</div>
+<!-- Simulation mode toggle buttons -->
+<div class="flex flex-wrap items-center gap-space-xs">
+<button class="px-space-md py-1.5 bg-surface-container-high border border-primary text-primary font-label-xs text-label-xs rounded font-bold transition-all hover:brightness-125" id="btnNormal">
+              [Normal Baseline]
+            </button>
+<button class="px-space-md py-1.5 bg-surface-container-low border border-outline-variant text-on-surface-variant font-label-xs text-label-xs rounded transition-all hover:border-tertiary hover:text-tertiary" id="btnFog">
+              [Fog Hazard]
+            </button>
+<button class="px-space-md py-1.5 bg-surface-container-low border border-outline-variant text-on-surface-variant font-label-xs text-label-xs rounded transition-all hover:border-tertiary hover:text-tertiary" id="btnBlur">
+              [Heavy Blur]
+            </button>
+<button class="px-space-md py-1.5 bg-surface-container-low border border-outline-variant text-on-surface-variant font-label-xs text-label-xs rounded transition-all hover:border-tertiary hover:text-tertiary" id="btnLowLight">
+              [Low Light / Glare]
+            </button>
+<!-- Automated Sequence Trigger -->
+<button class="ml-auto px-space-lg py-1.5 bg-primary-container text-on-primary font-label-xs text-label-xs font-bold rounded flex items-center gap-1.5 shadow-sm hover:brightness-110 active:scale-95 transition-all" id="btnAutoHeal">
+<span class="material-symbols-outlined text-[15px]">bolt</span>
+              ⚡ Trigger Degradation &amp; Auto-Heal
+            </button>
+</div>
+<!-- Bottom Control Toolbar -->
+<div class="flex flex-wrap items-center justify-between pt-space-xs border-t border-outline-variant gap-2">
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1 bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface font-label-xs text-label-xs rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">upload_file</span>
+                Upload Dataset
+              </button>
+<button class="px-space-sm py-1 bg-surface-container-low border border-outline-variant text-secondary font-label-xs text-label-xs rounded flex items-center gap-1" id="btnPlayPause">
+<span class="material-symbols-outlined text-[13px]">pause</span>
+                Continuous Monitoring
+              </button>
+<button class="px-space-sm py-1 bg-surface-container-low border border-outline-variant text-on-surface-variant hover:text-on-surface font-label-xs text-label-xs rounded flex items-center gap-1" id="btnReset">
+<span class="material-symbols-outlined text-[13px]">refresh</span>
+                Reset Pipeline
+              </button>
+</div>
+<div class="font-label-xs text-label-xs text-outline">
+              GPU ALLOCATION: <span class="text-on-surface">NVIDIA ORIN @ 15W</span>
+</div>
+</div>
+</section>
+</div>
+<!-- ============================================== -->
+<!-- RIGHT COLUMN: TELEMETRY & PIPELINE (xl:col-span-5) -->
+<!-- ============================================== -->
+<div class="xl:col-span-5 flex flex-col gap-space-lg">
+<!-- 2. PERCEPTION HEALTH PANEL -->
+<section class="bg-surface-container border border-outline-variant rounded p-space-md flex flex-col gap-space-md" id="telemetry">
+<div class="flex items-center justify-between pb-space-xs border-b border-outline-variant">
+<span class="font-label-xs text-label-xs text-outline uppercase font-bold">Perception Health Assessment</span>
+<span class="font-label-xs text-label-xs text-outline">SAFETY ENVELOPE τ = 0.70</span>
+</div>
+<!-- Big Status Indicator Block -->
+<div class="p-space-md bg-secondary/10 border border-secondary rounded flex flex-col gap-1 transition-colors duration-300" id="healthIndicatorBlock">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary hud-pulse" id="healthBeacon"></span>
+<span class="font-headline-md text-headline-md text-secondary font-bold" id="healthTitle">HEALTHY // OPTIMAL</span>
+</div>
+<span class="font-headline-lg text-headline-lg text-secondary font-mono font-bold" id="healthConfBig">86.4%</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1" id="healthSubtext">
+              Real-time perception confidence exceeds minimum autonomous safety threshold (τ = 0.70). Spatial bounds validated.
+            </p>
+</div>
+<!-- Metric Gauges / Mini Bar Meters -->
+<div class="flex flex-col gap-space-sm font-label-xs text-label-xs">
+<!-- Avg Confidence -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between">
+<span class="text-outline">Average Detection Confidence</span>
+<span class="text-secondary font-bold" id="meterConfVal">86%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-lowest rounded-full overflow-hidden border border-outline-variant">
+<div class="h-full bg-secondary transition-all duration-300" id="meterConfBar" style="width: 86%;"></div>
+</div>
+</div>
+<!-- Image Quality Index (BRISQUE) -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between">
+<span class="text-outline">Image Quality Index (BRISQUE)</span>
+<span class="text-on-surface font-bold" id="meterBrisqueVal">88.4 / 100 [Optimal]</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-lowest rounded-full overflow-hidden border border-outline-variant">
+<div class="h-full bg-primary transition-all duration-300" id="meterBrisqueBar" style="width: 88%;"></div>
+</div>
+</div>
+<!-- Blur Metric (Laplacian Var) -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between">
+<span class="text-outline">Laplacian Variance (Sharpness)</span>
+<span class="text-secondary font-bold" id="meterLaplacianVal">1.4 [Low Blur]</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-lowest rounded-full overflow-hidden border border-outline-variant">
+<div class="h-full bg-secondary transition-all duration-300" id="meterLaplacianBar" style="width: 86%;"></div>
+</div>
+</div>
+<!-- Obscuration & Entities Grid -->
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs border-t border-outline-variant text-outline">
+<div class="bg-surface-container-low p-2 border border-outline-variant rounded">
+<div class="text-[9px]">ATMOSPHERIC OBSCURATION</div>
+<div class="font-headline-md text-headline-md text-on-surface font-bold" id="obscurationVal">8%</div>
+<div class="text-[8px] text-secondary">MINIMAL INTERFERENCE</div>
+</div>
+<div class="bg-surface-container-low p-2 border border-outline-variant rounded">
+<div class="text-[9px]">ACTIVE DETECTED ENTITIES</div>
+<div class="font-headline-md text-headline-md text-primary font-bold" id="entityCountVal">09</div>
+<div class="text-[8px] text-outline">3 VEH / 2 PED / 4 SIGNS</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. SELF-HEALING PIPELINE STATE MACHINE -->
+<section class="bg-surface-container border border-outline-variant rounded p-space-md flex flex-col gap-space-sm" id="pipeline">
+<div class="flex items-center justify-between pb-space-xs border-b border-outline-variant">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">schema</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Self-Healing Pipeline State</h2>
+</div>
+<span class="font-label-xs text-label-xs text-secondary font-bold" id="pipelineCycleStatus">CYCLE: STABLE</span>
+</div>
+<!-- Pipeline Stepper / Stages -->
+<div class="flex flex-col gap-1.5 font-label-xs text-label-xs mt-1">
+<!-- Step 1 -->
+<div class="p-2 bg-surface-container-low border-l-2 border-secondary flex items-center justify-between rounded-r transition-all" id="step1">
+<div class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-[10px] font-bold">1</span>
+<span class="text-on-surface font-bold">MONITOR &amp; INGESTION</span>
+</div>
+<span class="text-secondary font-mono">✓ NOMINAL (60Hz)</span>
+</div>
+<!-- Step 2 -->
+<div class="p-2 bg-surface-container-low border-l-2 border-outline-variant flex items-center justify-between rounded-r transition-all opacity-70" id="step2">
+<div class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full bg-outline-variant text-outline flex items-center justify-center text-[10px] font-bold">2</span>
+<span class="text-on-surface">DEGRADATION DETECTION</span>
+</div>
+<span class="text-outline font-mono">CONFIDENCE DROP TRIGGER</span>
+</div>
+<!-- Step 3 -->
+<div class="p-2 bg-surface-container-low border-l-2 border-primary flex items-center justify-between rounded-r transition-all" id="step3">
+<div class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[10px] font-bold">3</span>
+<span class="text-primary font-bold">LATENT DIFFUSION RESTORATION</span>
+</div>
+<span class="text-primary font-mono font-bold">⚡ READY (38ms)</span>
+</div>
+<!-- Step 4 -->
+<div class="p-2 bg-surface-container-low border-l-2 border-outline-variant flex items-center justify-between rounded-r transition-all opacity-70" id="step4">
+<div class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full bg-outline-variant text-outline flex items-center justify-center text-[10px] font-bold">4</span>
+<span class="text-on-surface">RE-DETECTION &amp; TRACK MATCH</span>
+</div>
+<span class="text-outline font-mono">SECOND-PASS YOLOv9</span>
+</div>
+<!-- Step 5 -->
+<div class="p-2 bg-surface-container-low border-l-2 border-secondary flex items-center justify-between rounded-r transition-all" id="step5">
+<div class="flex items-center gap-2">
+<span class="w-4 h-4 rounded-full bg-secondary/20 text-secondary flex items-center justify-center text-[10px] font-bold">5</span>
+<span class="text-on-surface font-bold">SAFETY VERIFICATION</span>
+</div>
+<span class="text-secondary font-mono">ΔConf &gt; +35% PASSED</span>
+</div>
+</div>
+<!-- Real-Time Pipeline Alert Banner -->
+<div class="mt-2 p-2.5 bg-surface-container-high border border-secondary/50 rounded flex flex-col gap-0.5" id="pipelineAlertBox">
+<div class="flex items-center gap-1.5 font-label-xs text-label-xs text-secondary font-bold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span id="pipelineAlertTitle">PIPELINE STATUS: RECOVERY VERIFIED</span>
+</div>
+<p class="font-body-sm text-[11px] text-on-surface-variant" id="pipelineAlertDesc">
+              Generative model regenerated spatial frequencies in 38ms. 3/3 target objects recovered with zero hallucination.
+            </p>
+</div>
+</section>
+<!-- 5. DETECTION SUMMARY METRICS -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-space-sm font-label-xs text-label-xs">
+<div class="bg-surface-container border border-outline-variant p-space-sm rounded flex flex-col">
+<span class="text-outline text-[10px]">VEHICLES</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold mt-1" id="sumVehicles">03</span>
+<span class="text-secondary text-[9px] mt-0.5">+1 Recovered</span>
+</div>
+<div class="bg-surface-container border border-outline-variant p-space-sm rounded flex flex-col">
+<span class="text-outline text-[10px]">PEDESTRIANS</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold mt-1" id="sumPedestrians">02</span>
+<span class="text-secondary text-[9px] mt-0.5">+2 From Fog</span>
+</div>
+<div class="bg-surface-container border border-outline-variant p-space-sm rounded flex flex-col">
+<span class="text-outline text-[10px]">TRAFFIC SIGNS</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold mt-1">04</span>
+<span class="text-primary text-[9px] mt-0.5">100% Classified</span>
+</div>
+<div class="bg-surface-container border border-outline-variant p-space-sm rounded flex flex-col">
+<span class="text-outline text-[10px]">AVG CONFIDENCE</span>
+<span class="font-headline-md text-headline-md text-secondary font-bold mt-1" id="sumAvgConf">86%</span>
+<span class="text-outline text-[9px] mt-0.5">Base: 42%</span>
+</div>
+</section>
+<!-- 6. SYSTEM ACTIVITY / EVENT LOG -->
+<section class="bg-surface-container border border-outline-variant rounded p-space-md flex flex-col gap-space-xs flex-1" id="diagnostics">
+<div class="flex items-center justify-between pb-space-xs border-b border-outline-variant">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-outline text-[16px]">terminal</span>
+<span class="font-label-xs text-label-xs text-outline uppercase font-bold">System Event Terminal Feed</span>
+</div>
+<span class="font-label-xs text-label-xs text-secondary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> LIVE
+            </span>
+</div>
+<!-- Monospace Chronological Stream -->
+<div class="font-label-xs text-[10px] flex flex-col gap-1 max-h-48 overflow-y-auto pr-1 text-on-surface-variant font-mono" id="eventLogContainer">
+<div class="flex items-start gap-2">
+<span class="text-outline">12:04:21.102</span>
+<span class="text-primary">[INFO]</span>
+<span class="text-on-surface">Nominal perception stream active at 59.4 FPS. Spatial tensor synchronized.</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="text-outline">12:04:26.418</span>
+<span class="text-tertiary">[WARN]</span>
+<span class="text-tertiary">Visual degradation detected: Laplacian variance dropped to 14.2.</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="text-outline">12:04:27.004</span>
+<span class="text-error">[TRIGGER]</span>
+<span class="text-error">Confidence fell below threshold (&lt;50%). Dispatched GenAI healing buffer.</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="text-outline">12:04:29.210</span>
+<span class="text-primary">[GENAI]</span>
+<span class="text-on-surface">Latent generative restoration completed in 39.4ms (SSIM: 0.91).</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="text-outline">12:04:30.012</span>
+<span class="text-secondary">[SUCCESS]</span>
+<span class="text-secondary">Recovery verified: Confidence +44% (42% -&gt; 86%). Perception nominal.</span>
+</div>
+</div>
+</section>
+<!-- 7. PERFORMANCE BENCHMARKS -->
+<section class="bg-surface-container-low border border-outline-variant rounded p-space-sm flex flex-wrap items-center justify-between gap-space-sm text-outline font-label-xs text-label-xs">
+<div>CV INFERENCE: <strong class="text-primary">14.2 ms</strong></div>
+<div class="text-outline-variant">|</div>
+<div>RESTORATION: <strong class="text-primary">41.8 ms</strong></div>
+<div class="text-outline-variant">|</div>
+<div>END-TO-END: <strong class="text-secondary">56.0 ms</strong></div>
+<div class="text-outline-variant">|</div>
+<div>SAFETY RATE: <strong class="text-secondary">99.4%</strong></div>
+</section>
+</div>
+</main>
+</div>
+<!-- INTERACTIVE VANILLA JS BENCHMARK CONTROLLER -->
+
+    <!-- ADDED: Flask Static JS -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
